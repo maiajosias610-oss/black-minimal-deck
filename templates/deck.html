@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>黑色极简演示设计系统 · Black Minimal Deck System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100..900;1,300..700&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+<style>
+/* === 黑色极简演示设计系统 — 纯黑底 + 荧光柠绿 + 中性灰 ===
+   说明：本文件为脱敏后的「设计系统模板」，所有公司 / 人名 / 真实数据 /
+   地标照片均已替换为中性占位内容，可直接用于任意领域的演示。
+   仅依赖 Google Fonts（离线时自动回退系统字体）。 */
+:root{
+  --bg:#000000;
+  --text:#FFFFFF;
+  --accent:#cdf030;
+  --gray:#bbbbbb;
+  --line:rgba(187,187,187,0.25);
+  --pad-x:120px;
+  --pad-y:100px;
+  --stage-w:1920px;
+  --stage-h:1080px;
+}
+*{box-sizing:border-box;}
+html,body{
+  margin:0;padding:0;width:100%;height:100%;overflow:hidden;
+  background:#000000;
+  font-family:'Inter','Noto Sans SC',sans-serif;
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* === 固定 16:9 舞台 === */
+#viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000000;}
+.stage{
+  width:var(--stage-w);height:var(--stage-h);
+  background:var(--bg);
+  position:absolute;top:50%;left:50%;
+  transform-origin:center center;
+  overflow:hidden;
+}
+
+/* === 幻灯片显隐 === */
+.slide{position:absolute;inset:0;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .55s ease,visibility .55s ease;overflow:hidden;}
+.slide.active{opacity:1;visibility:visible;pointer-events:auto;z-index:10;}
+.slide-inner{position:absolute;inset:0;padding:var(--pad-y) var(--pad-x);}
+
+/* === 字体层级 === */
+.display{font-family:'Inter','Helvetica Neue',Helvetica,sans-serif;font-weight:900;font-size:110px;line-height:1.0;letter-spacing:-0.03em;text-transform:uppercase;}
+.h1{font-family:'Inter','Noto Sans SC',sans-serif;font-weight:800;font-size:64px;line-height:1.06;letter-spacing:-0.015em;}
+.h1-en{font-family:'Inter',sans-serif;font-weight:600;font-size:20px;line-height:1.2;color:var(--gray);text-transform:uppercase;letter-spacing:0.06em;margin-top:18px;}
+.h2{font-family:'Inter','Noto Sans SC',sans-serif;font-weight:700;font-size:44px;line-height:1.18;color:var(--text);}
+.h3{font-family:'Inter','Noto Sans SC',sans-serif;font-weight:400;font-size:22px;line-height:1.4;color:var(--gray);margin-top:16px;}
+.module-title{font-family:'Inter','Noto Sans SC',sans-serif;font-weight:600;font-size:20px;line-height:1.3;margin-bottom:12px;color:var(--text);}
+.body{font-family:'Inter','Noto Sans SC',sans-serif;font-weight:400;font-size:17px;line-height:1.64;color:var(--gray);}
+.source-note{font-family:'Inter','Noto Sans SC',sans-serif;font-weight:400;font-size:12.5px;line-height:1.5;color:var(--gray);opacity:.72;}
+.source-note .accent{font-weight:700;}
+.label{font-family:'Inter',sans-serif;font-weight:500;font-size:12px;line-height:1.4;color:var(--gray);letter-spacing:0.08em;text-transform:uppercase;}
+.quote{font-family:'Inter',sans-serif;font-style:italic;font-weight:500;font-size:22px;line-height:1.4;color:var(--text);}
+
+/* 关键词强化 */
+.strong{font-weight:700;color:var(--text);}
+.accent{color:var(--accent);}
+
+/* === 布局工具 === */
+.top-right{position:absolute;top:var(--pad-y);right:var(--pad-x);text-align:right;}
+.top-left{position:absolute;top:var(--pad-y);left:var(--pad-x);}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:90px;align-content:start;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:30px;align-content:start;}
+
+/* === 章节序号（荧光绿） === */
+.chapter-num{font-family:'Inter','Helvetica Neue',Helvetica,sans-serif;font-weight:900;font-size:260px;line-height:0.85;color:var(--accent);letter-spacing:-0.05em;opacity:.9;}
+.toc-num{font-family:'Inter',sans-serif;font-weight:700;font-size:inherit;color:var(--accent);margin-right:14px;}
+
+/* === 信息框两种形态 === */
+/* 分支模块：空心灰描边 */
+.proof{
+  border:1.5px solid var(--line);
+  background:transparent;
+  border-radius:14px;
+  padding:18px 24px;
+  margin-bottom:18px;
+  cursor:pointer;
+  position:relative;
+  transition:border-color .25s ease,background .25s ease;
+}
+.proof:hover{border-color:var(--gray);background:rgba(187,187,187,0.04);}
+.proof-detail{max-height:0;overflow:hidden;transition:max-height .4s ease;font-size:15px;line-height:1.5;color:var(--gray);margin-top:0;}
+.proof.expanded .proof-detail{max-height:240px;margin-top:12px;}
+
+/* 核心模块：实心荧光绿块 */
+.proof-core{
+  background:var(--accent);
+  border-radius:14px;
+  padding:22px 28px;
+  margin-bottom:18px;
+  color:#000000;
+}
+.proof-core .module-title{color:#000000;font-weight:700;}
+.proof-core .body{color:#000000;opacity:.85;}
+
+/* === 标签 / 状态 === */
+.tag{display:inline-block;font-family:'Inter',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.06em;color:var(--gray);background:transparent;border:1.5px solid var(--line);padding:4px 10px;margin-right:8px;border-radius:20px;vertical-align:middle;}
+.tag.accent-tag{background:var(--accent);color:#000000;border-color:var(--accent);font-weight:700;}
+
+/* 胶囊标签（荧光绿实心+黑字） */
+.capsule{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--accent);color:#000000;
+  font-family:'Inter','Noto Sans SC',sans-serif;font-weight:700;font-size:14px;
+  letter-spacing:0.02em;padding:10px 24px;border-radius:999px;
+}
+
+/* === 底部页码导航 === */
+.bottom-bar{position:absolute;bottom:28px;left:0;width:100%;padding:0 var(--pad-x);display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none;}
+.page-num{font-family:'Inter',sans-serif;font-weight:300;font-size:13px;color:var(--gray);letter-spacing:0.06em;opacity:.6;}
+.loop-note{position:absolute;bottom:26px;left:var(--pad-x);font-family:'Inter',sans-serif;font-weight:300;font-size:11px;color:var(--gray);letter-spacing:0.05em;max-width:60%;opacity:.5;}
+
+/* === 目录 === */
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px 90px;margin-top:50px;}
+.toc-row{display:flex;align-items:baseline;font-family:'Inter','Noto Sans SC',sans-serif;font-weight:600;font-size:22px;color:var(--text);text-decoration:none;border-bottom:1px solid var(--line);padding:16px 0;transition:color .2s ease,border-color .2s ease;}
+.toc-row:hover{color:var(--accent);border-color:var(--accent);}
+.toc-row .toc-cn{font-family:'Noto Sans SC',sans-serif;font-weight:400;font-size:15px;color:var(--gray);margin-left:10px;}
+
+/* === 章节过渡对比 === */
+.guess-compare{display:flex;align-items:stretch;gap:60px;margin-top:90px;max-width:1280px;}
+.guess,.confidence{flex:1;border-top:2px solid var(--line);padding-top:24px;}
+.confidence{border-top-color:var(--accent);}
+
+/* === 漏斗指标 === */
+.funnel{display:flex;gap:0;margin-top:50px;max-width:1280px;}
+.funnel-step{flex:1;background:transparent;border:1.5px solid var(--line);border-top:3px solid var(--accent);padding:14px 16px;margin-right:12px;font-family:'Inter','Noto Sans SC',sans-serif;font-weight:600;font-size:16px;color:var(--gray);border-radius:0 0 10px 10px;}
+.funnel-step:last-child{margin-right:0;}
+.funnel-arrow{width:32px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-family:'Inter',sans-serif;font-weight:700;font-size:20px;flex-shrink:0;}
+.funnel-row{display:flex;align-items:stretch;margin-top:46px;max-width:1280px;}
+.funnel-row .funnel-step{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;margin-right:0;}
+.funnel-row .funnel-step:nth-child(1){background:rgba(205,240,48,0.06);}
+.funnel-row .funnel-step:nth-child(3){background:rgba(205,240,48,0.12);}
+.funnel-row .funnel-step:nth-child(5){background:rgba(205,240,48,0.18);}
+.funnel-row .funnel-step:nth-child(7){background:rgba(205,240,48,0.28);color:#ffffff;border-color:var(--accent);}
+
+/* === 模块列表 / 对比表 / 团队 / 财务 === */
+.module-list{margin-top:8px;}
+.module-item{font-family:'Inter','Noto Sans SC',sans-serif;font-weight:500;font-size:18px;padding:11px 0;border-bottom:1px solid var(--line);color:var(--text);}
+.compare-table .compare-row{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border:1.5px solid var(--line);margin-bottom:10px;font-family:'Inter','Noto Sans SC',sans-serif;font-weight:500;font-size:17px;border-radius:12px;background:transparent;transition:border-color .2s ease;}
+.compare-table .compare-row:hover{border-color:var(--gray);}
+.compare-table .compare-row.active{border-color:var(--accent);background:var(--accent);color:#000000;font-weight:700;}
+/* === 三项差异化 3-card layout === */
+.diff3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:1280px;margin-top:22px;}
+.diff3 .diff-card{border:1.5px solid var(--line);border-radius:12px;padding:22px 24px;}
+.diff3 .diff-no{font-family:'Inter',sans-serif;font-weight:700;color:var(--accent);font-size:16px;letter-spacing:.04em;margin-bottom:12px;}
+.diff3 .diff-txt{font-family:'Inter','Noto Sans SC',sans-serif;font-weight:500;font-size:16px;line-height:1.55;color:var(--text);}
+.stage-strip{display:flex;gap:14px;margin-bottom:40px;}
+/* === 底部补白图形（闭环） === */
+.io-band{display:flex;align-items:center;justify-content:center;gap:26px;flex-wrap:wrap;margin-top:36px;}
+.io-pill{border:1.5px solid var(--accent);border-radius:10px;padding:14px 26px;background:var(--accent);color:#000;font-family:'Inter','Noto Sans SC',sans-serif;font-weight:800;font-size:17px;white-space:nowrap;}
+.io-node{border:1.5px solid var(--accent);border-radius:10px;padding:14px 22px;color:var(--text);font-family:'Inter','Noto Sans SC',sans-serif;font-weight:700;font-size:16px;white-space:nowrap;}
+.io-box{border:1.5px solid var(--line);border-radius:12px;padding:18px 24px;background:transparent;}
+.io-cap{font-size:11px;color:var(--gray);letter-spacing:.06em;margin-bottom:12px;text-transform:uppercase;}
+.io-chips{display:flex;gap:12px;flex-wrap:wrap;}
+.io-chip{border:1px solid var(--line);border-radius:14px;padding:7px 18px;font-family:'Inter','Noto Sans SC',sans-serif;font-size:15px;color:var(--text);white-space:nowrap;}
+.io-arrow{width:60px;height:24px;flex:0 0 auto;}
+.io-loop{display:block;width:100%;max-width:1080px;margin:18px auto 0;}
+.stage-item{flex:1;border-top:3px solid var(--accent);padding-top:12px;font-family:'Inter','Noto Sans SC',sans-serif;font-weight:600;font-size:17px;color:var(--text);}
+.case-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.case{border:1.5px solid var(--line);border-radius:12px;padding:18px 22px;background:transparent;transition:border-color .2s ease;}
+.case:hover{border-color:var(--gray);}
+.team-row{display:flex;gap:20px;}
+.team-card{flex:1;border:1.5px solid var(--line);border-radius:14px;padding:20px;font-family:'Inter','Noto Sans SC',sans-serif;font-weight:600;font-size:18px;background:transparent;text-align:center;transition:border-color .2s ease;}
+.team-card:hover{border-color:var(--gray);}
+.team-card .team-avatar{width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid var(--line);background:rgba(187,187,187,0.08);}
+.team-card .team-bio{font-weight:400;font-size:13px;line-height:1.6;color:var(--gray);margin-top:12px;text-align:center;letter-spacing:.01em;}
+.models .model{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--line);font-family:'Inter','Noto Sans SC',sans-serif;font-size:18px;font-weight:500;}
+.finance-bars{display:flex;align-items:flex-end;gap:40px;height:280px;margin-top:20px;}
+.bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;}
+.bar-fill{width:100%;background:var(--accent);border-radius:4px 4px 0 0;}
+.bar-label{margin-top:10px;font-family:'Inter',sans-serif;font-weight:600;font-size:15px;text-align:center;color:var(--gray);}
+
+/* === 本版新增组件（沿用同一设计语言） === */
+.cover-title{font-family:'Noto Sans SC','Inter',sans-serif;font-weight:900;font-size:92px;line-height:1.05;letter-spacing:-0.02em;color:var(--text);}
+.cover-sub{font-family:'Noto Sans SC','Inter',sans-serif;font-weight:300;font-size:30px;color:var(--gray);margin-top:28px;letter-spacing:0.02em;}
+.brand-foot{position:absolute;bottom:28px;left:var(--pad-x);font-family:'Inter','Noto Sans SC',sans-serif;font-weight:300;font-size:11px;color:var(--gray);letter-spacing:0.05em;opacity:.5;}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:40px;}
+.kpi{border:1.5px solid var(--line);border-top:3px solid var(--accent);border-radius:12px;padding:22px 18px;background:transparent;}
+.kpi .kpi-num{font-family:'Inter',sans-serif;font-weight:900;font-size:44px;color:var(--accent);letter-spacing:-0.02em;line-height:1;}
+.kpi .kpi-unit{font-size:15px;color:var(--text);font-weight:600;margin-left:4px;font-family:'Noto Sans SC',sans-serif;}
+.kpi .kpi-label{font-family:'Noto Sans SC','Inter',sans-serif;font-size:14px;color:var(--gray);margin-top:12px;line-height:1.45;}
+.big3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:46px;}
+.big3 .bnum{font-family:'Inter',sans-serif;font-weight:900;font-size:64px;color:var(--accent);letter-spacing:-0.03em;line-height:1;}
+.big3 .bunit{font-size:18px;color:var(--text);font-weight:600;margin-left:6px;font-family:'Noto Sans SC',sans-serif;}
+.big3 .blabel{font-family:'Noto Sans SC','Inter',sans-serif;font-size:15px;color:var(--gray);margin-top:10px;line-height:1.4;}
+.data-table{width:100%;border-collapse:collapse;margin-top:30px;}
+.data-table th{font-family:'Inter','Noto Sans SC',sans-serif;font-weight:600;font-size:13px;color:var(--gray);text-align:left;padding:12px 14px;border-bottom:2px solid var(--line);letter-spacing:.04em;}
+.data-table td{font-family:'Noto Sans SC','Inter',sans-serif;font-size:15px;color:var(--text);padding:13px 14px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.5;}
+.data-table tr:hover td{background:rgba(187,187,187,0.04);}
+
+/* === 产品协同逻辑 / 共享能力 === */
+.synergy{display:flex;align-items:stretch;gap:0;margin-top:18px;}
+.synergy-step{flex:1;border:1.5px solid var(--line);border-radius:12px;padding:15px 18px;font-family:'Inter','Noto Sans SC',sans-serif;font-weight:600;font-size:17px;color:var(--text);display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.25;}
+.synergy-arrow{flex:0 0 46px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:22px;font-weight:700;}
+.shared{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;}
+.shared .chip{font-family:'Inter','Noto Sans SC',sans-serif;font-weight:500;font-size:15px;color:var(--gray);border:1.5px solid var(--line);border-radius:999px;padding:8px 20px;}
+.gate-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:40px;}
+.gate{border:1.5px solid var(--line);border-top:3px solid var(--accent);border-radius:12px;padding:18px;background:transparent;}
+.gate .gate-tag{font-family:'Inter',sans-serif;font-weight:700;font-size:15px;color:var(--accent);}
+.gate .gate-title{font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:18px;color:var(--text);margin-top:8px;}
+.gate .gate-q{font-family:'Noto Sans SC',sans-serif;font-size:14px;color:var(--gray);margin-top:10px;}
+
+/* === 抽象装饰（替代真实地标照片） === */
+.glass-deco{position:absolute;pointer-events:none;z-index:1;opacity:.85;}
+.cover-deco{position:absolute;right:120px;top:200px;width:560px;height:560px;pointer-events:none;z-index:1;opacity:.9;}
+.page-num-fixed{position:absolute;bottom:28px;right:var(--pad-x);z-index:20;}
+
+/* === 渐进式分步加载动画 === */
+.anim{opacity:0;transform:translateY(20px);}
+.slide.active .anim{animation:fadeUp .65s cubic-bezier(.22,1,.36,1) forwards;animation-delay:var(--d,0s);}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0);}}
+
+/* 导航控制 */
+.nav-ctrl{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:12px;}
+.nav-ctrl button{font-family:'Inter',sans-serif;font-weight:600;font-size:13px;color:#000;background:var(--accent);border:none;padding:8px 16px;cursor:pointer;letter-spacing:0.06em;border-radius:6px;transition:opacity .2s ease;}
+.nav-ctrl button:hover{opacity:.85;}
+
+/* 执行原则条 */
+.exec-bar{border-left:3px solid var(--accent);padding-left:18px;margin-top:40px;}
+.exec-bar .exec-title{font-family:'Inter',sans-serif;font-weight:700;font-size:14px;color:var(--accent);letter-spacing:0.08em;text-transform:uppercase;}
+.exec-bar .exec-body{font-family:'Inter','Noto Sans SC',sans-serif;font-size:15px;color:var(--gray);margin-top:6px;}
+
+/* === 设计令牌页专用 === */
+.token-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;margin-top:40px;}
+.swatch{border:1.5px solid var(--line);border-radius:12px;padding:0;overflow:hidden;background:transparent;}
+.swatch .chip{height:96px;width:100%;}
+.swatch .meta{padding:12px 14px;}
+.swatch .name{font-family:'Inter',sans-serif;font-weight:600;font-size:13px;color:var(--text);}
+.swatch .val{font-family:'Inter',sans-serif;font-size:11px;color:var(--gray);letter-spacing:.02em;margin-top:4px;}
+.type-row{display:flex;align-items:baseline;gap:24px;border-bottom:1px solid var(--line);padding:16px 0;}
+.type-row .tname{font-family:'Inter',sans-serif;font-weight:600;font-size:13px;color:var(--accent);width:160px;flex-shrink:0;}
+.type-row .tsample{flex:1;color:var(--text);}
+.type-row .tmeta{font-family:'Inter',sans-serif;font-size:11px;color:var(--gray);width:200px;text-align:right;flex-shrink:0;}
+
+/* === 组件画廊标注 === */
+.comp-cap{display:inline-block;font-family:'Inter',sans-serif;font-weight:600;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--gray);opacity:.55;margin-bottom:14px;border:1px solid var(--line);padding:3px 10px;border-radius:20px;}
+.gallery-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px 60px;margin-top:40px;}
+
+/* 顶部脱敏提示条 */
+.ds-banner{position:absolute;top:0;left:0;width:100%;background:rgba(205,240,48,0.08);border-bottom:1px solid var(--line);padding:8px var(--pad-x);font-family:'Inter',sans-serif;font-size:12px;letter-spacing:.04em;color:var(--accent);z-index:30;}
+</style>
+</head>
+<body>
+<div id="viewport">
+  <div class="stage" id="stage">
+
+    <!-- ============ 1 COVER ============ -->
+    <section class="slide" id="slide-1" data-title="Cover">
+      <div class="ds-banner">DESENSITIZED DESIGN-SYSTEM TEMPLATE · 内容均为中性占位，可直接替换</div>
+      <svg class="cover-deco" viewBox="0 0 560 560" aria-hidden="true">
+        <circle cx="280" cy="280" r="250" fill="none" stroke="var(--line)" stroke-width="1.2"/>
+        <circle cx="280" cy="280" r="180" fill="none" stroke="var(--line)" stroke-width="1.2"/>
+        <circle cx="280" cy="280" r="110" fill="none" stroke="var(--accent)" stroke-width="1.5" opacity=".6"/>
+        <circle cx="280" cy="280" r="40" fill="var(--accent)" opacity=".9"/>
+        <line x1="280" y1="30" x2="280" y2="530" stroke="var(--line)" stroke-width="1" opacity=".5"/>
+        <line x1="30" y1="280" x2="530" y2="280" stroke="var(--line)" stroke-width="1" opacity=".5"/>
+      </svg>
+      <div class="slide-inner">
+        <div class="label anim" style="--d:.05s;">PRESENTATION DESIGN SYSTEM</div>
+        <div class="display anim" style="--d:.15s;margin-top:24px;font-size:96px;">BLACK<br/>MINIMAL</div>
+        <div class="cover-title anim" style="--d:.3s;font-family:'Noto Sans SC','Inter',sans-serif;font-weight:900;font-size:60px;line-height:1.1;margin-top:30px;color:var(--text);">黑色极简演示设计系统</div>
+        <div class="cover-sub anim" style="--d:.45s;font-family:'Noto Sans SC','Inter',sans-serif;font-weight:300;font-size:24px;color:var(--gray);margin-top:24px;letter-spacing:.02em;">单文件 HTML · 荧光柠绿 #cdf030 · 16:9 固定舞台 · 30+ 复用组件</div>
+        <div class="bottom-bar">
+          <div class="label">EXAMPLE LABS / 示例科技</div>
+          <div class="label">DESIGN SYSTEM v1.0</div>
+        </div>
+        <div class="page-num-fixed page-num">01 / 11</div>
+      </div>
+    </section>
+
+    <!-- ============ 2 TOC ============ -->
+    <section class="slide" id="slide-2" data-title="Contents">
+      <div class="slide-inner">
+        <div class="label anim" style="--d:.05s;">CONTENTS / 目录</div>
+        <div class="h1 anim" style="--d:.12s;margin-top:14px;">设计系统导览</div>
+        <div class="toc-grid anim" style="--d:.25s;">
+          <a class="toc-row" href="#slide-3">01<span class="toc-cn">设计令牌 Design Tokens</span></a>
+          <a class="toc-row" href="#slide-4">02<span class="toc-cn">组件画廊 A · 卡片与标签</span></a>
+          <a class="toc-row" href="#slide-5">03<span class="toc-cn">组件画廊 B · 流程与列表</span></a>
+          <a class="toc-row" href="#slide-6">04<span class="toc-cn">组件画廊 C · 数据网格</span></a>
+          <a class="toc-row" href="#slide-7">05<span class="toc-cn">架构图示例 Architecture</span></a>
+          <a class="toc-row" href="#slide-8">06<span class="toc-cn">演示示例 · 项目概览</span></a>
+          <a class="toc-row" href="#slide-9">07<span class="toc-cn">演示示例 · 团队与数据</span></a>
+          <a class="toc-row" href="#slide-10">08<span class="toc-cn">章节过渡示例 Divider</span></a>
+        </div>
+        <div class="page-num-fixed page-num">02 / 11</div>
+      </div>
+    </section>
+
+    <!-- ============ 3 DESIGN TOKENS ============ -->
+    <section class="slide" id="slide-3" data-title="Design Tokens">
+      <div class="slide-inner">
+        <div class="label anim" style="--d:.05s;">01 / DESIGN TOKENS</div>
+        <div class="h1 anim" style="--d:.12s;margin-top:14px;">设计令牌</div>
+        <div class="token-grid anim" style="--d:.25s;">
+          <div class="swatch"><div class="chip" style="background:var(--bg);"></div><div class="meta"><div class="name">--bg</div><div class="val">#000000</div></div></div>
+          <div class="swatch"><div class="chip" style="background:var(--text);"></div><div class="meta"><div class="name">--text</div><div class="val">#FFFFFF</div></div></div>
+          <div class="swatch"><div class="chip" style="background:var(--accent);"></div><div class="meta"><div class="name">--accent</div><div class="val">#cdf030</div></div></div>
+          <div class="swatch"><div class="chip" style="background:var(--gray);"></div><div class="meta"><div class="name">--gray</div><div class="val">#bbbbbb</div></div></div>
+          <div class="swatch"><div class="chip" style="background:var(--line);"></div><div class="meta"><div class="name">--line</div><div class="val">rgba(187,187,187,.25)</div></div></div>
+        </div>
+        <div class="h3 anim" style="--d:.35s;margin-top:48px;">字体层级（Inter + Noto Sans SC）</div>
+        <div class="anim" style="--d:.45s;margin-top:8px;">
+          <div class="type-row"><div class="tname">.display</div><div class="tsample" style="font-weight:900;font-size:54px;letter-spacing:-.03em;text-transform:uppercase;">Headline 01</div><div class="tmeta">900 / 110px / 大写字距 -.03em</div></div>
+          <div class="type-row"><div class="tname">.h1</div><div class="tsample" style="font-weight:800;font-size:40px;">一级标题</div><div class="tmeta">800 / 64px</div></div>
+          <div class="type-row"><div class="tname">.h2</div><div class="tsample" style="font-weight:700;font-size:32px;">二级标题 Secondary</div><div class="tmeta">700 / 44px</div></div>
+          <div class="type-row"><div class="tname">.body</div><div class="tsample" style="font-weight:400;font-size:18px;">正文文本用于说明性内容，行高 1.64，灰色。</div><div class="tmeta">400 / 17px / line 1.64</div></div>
+        </div>
+        <div class="page-num-fixed page-num">03 / 11</div>
+      </div>
+    </section>
+
+    <!-- ============ 4 GALLERY A ============ -->
+    <section class="slide" id="slide-4" data-title="Gallery A">
+      <div class="slide-inner">
+        <div class="label anim" style="--d:.05s;">02 / COMPONENT GALLERY A</div>
+        <div class="h1 anim" style="--d:.12s;margin-top:14px;">组件画廊 · 卡片与标签</div>
+        <div class="gallery-grid anim" style="--d:.25s;">
+          <div>
+            <span class="comp-cap">.proof （空心灰描边，可点击展开）</span>
+            <div class="proof" data-proof>
+              <div class="module-title">分支模块标题</div>
+              <div class="body">点击展开详情。用于罗列多个并列要点或证据。</div>
+              <div class="proof-detail">展开后的补充说明文字，最多约 4 行，灰色小字。</div>
+            </div>
+            <div class="proof" data-proof>
+              <div class="module-title">另一个分支</div>
+              <div class="body">实心色块用于强调核心信息。</div>
+              <div class="proof-detail">展开后的补充说明文字。</div>
+            </div>
+          </div>
+          <div>
+            <span class="comp-cap">.proof-core （实心荧光绿块）</span>
+            <div class="proof-core">
+              <div class="module-title">核心结论 / 价值主张</div>
+              <div class="body">黑色文字配荧光绿底，用于页面中最关键的单一信息。</div>
+            </div>
+            <span class="comp-cap" style="margin-top:18px;">.tag / .capsule （标签与胶囊）</span>
+            <div style="margin-top:6px;">
+              <span class="tag">中性标签</span>
+              <span class="tag accent-tag">强调标签</span>
+              <span class="capsule" style="margin-left:8px;">胶囊状态</span>
+            </div>
+            <span class="comp-cap" style="margin-top:24px;">.kpi-grid / .big3 （指标）</span>
+            <div class="kpi-grid" style="grid-template-columns:repeat(2,1fr);margin-top:10px;">
+              <div class="kpi"><div class="kpi-num">98<span class="kpi-unit">%</span></div><div class="kpi-label">示例指标一</div></div>
+              <div class="kpi"><div class="kpi-num">24<span class="kpi-unit">x</span></div><div class="kpi-label">示例指标二</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="page-num-fixed page-num">04 / 11</div>
+      </div>
+    </section>
+
+    <!-- ============ 5 GALLERY B ============ -->
+    <section class="slide" id="slide-5" data-title="Gallery B">
+      <div class="slide-inner">
+        <div class="label anim" style="--d:.05s;">03 / COMPONENT GALLERY B</div>
+        <div class="h1 anim" style="--d:.12s;margin-top:14px;">组件画廊 · 流程与列表</div>
+        <div class="gallery-grid anim" style="--d:.25s;">
+          <div>
+            <span class="comp-cap">.funnel-row （递进漏斗）</span>
+            <div class="funnel-row" style="margin-top:10px;">
+              <div class="funnel-step">阶段一</div>
+              <div class="funnel-arrow">→</div>
+              <div class="funnel-step">阶段二</div>
+              <div class="funnel-arrow">→</div>
+              <div class="funnel-step">阶段三</div>
+              <div class="funnel-arrow">→</div>
+              <div class="funnel-step">达成</div>
+            </div>
+            <span class="comp-cap" style="margin-top:26px;">.module-list （要点列表）</span>
+            <div class="module-list" style="margin-top:10px;">
+              <div class="module-item">要点一：用一行说明核心信息</div>
+              <div class="module-item">要点二：保持每条长度接近</div>
+              <div class="module-item">要点三：避免过长换行</div>
+            </div>
+          </div>
+          <div>
+            <span class="comp-cap">.compare-table （对比表，可高亮一行）</span>
+            <div class="compare-table" style="margin-top:10px;">
+              <div class="compare-row"><span>方案 A</span><span>说明文字</span></div>
+              <div class="compare-row active"><span>方案 B（推荐）</span><span>核心优势</span></div>
+              <div class="compare-row"><span>方案 C</span><span>说明文字</span></div>
+            </div>
+            <span class="comp-cap" style="margin-top:26px;">.diff3 （三栏差异化）</span>
+            <div class="diff3" style="margin-top:10px;grid-template-columns:repeat(3,1fr);">
+              <div class="diff-card"><div class="diff-no">01</div><div class="diff-txt">差异化点一的描述，简短有力。</div></div>
+              <div class="diff-card"><div class="diff-no">02</div><div class="diff-txt">差异化点二的描述，简短有力。</div></div>
+              <div class="diff-card"><div class="diff-no">03</div><div class="diff-txt">差异化点三的描述，简短有力。</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="page-num-fixed page-num">05 / 11</div>
+      </div>
+    </section>
+
+    <!-- ============ 6 GALLERY C ============ -->
+    <section class="slide" id="slide-6" data-title="Gallery C">
+      <div class="slide-inner">
+        <div class="label anim" style="--d:.05s;">04 / COMPONENT GALLERY C</div>
+        <div class="h1 anim" style="--d:.12s;margin-top:14px;">组件画廊 · 数据网格</div>
+        <div class="gallery-grid anim" style="--d:.25s;">
+          <div>
+            <span class="comp-cap">.data-table （数据表）</span>
+            <table class="data-table" style="margin-top:10px;">
+              <thead><tr><th>维度</th><th>示例 A</th><th>示例 B</th></tr></thead>
+              <tbody>
+                <tr><td>指标一</td><td>数值 / 状态</td><td>数值 / 状态</td></tr>
+                <tr><td>指标二</td><td>数值 / 状态</td><td>数值 / 状态</td></tr>
+                <tr><td>指标三</td><td>数值 / 状态</td><td>数值 / 状态</td></tr>
+              </tbody>
+            </table>
+            <span class="comp-cap" style="margin-top:26px;">.gate-grid （四宫格）</span>
+            <div class="gate-grid" style="grid-template-columns:repeat(2,1fr);margin-top:10px;">
+              <div class="gate"><div class="gate-tag">Q1</div><div class="gate-title">问题一</div><div class="gate-q">示例提问占位。</div></div>
+              <div class="gate"><div class="gate-tag">Q2</div><div class="gate-title">问题二</div><div class="gate-q">示例提问占位。</div></div>
+            </div>
+          </div>
+          <div>
+            <span class="comp-cap">.synergy + .shared （协同链路）</span>
+            <div class="synergy" style="margin-top:10px;">
+              <div class="synergy-step">输入</div><div class="synergy-arrow">→</div>
+              <div class="synergy-step">处理</div><div class="synergy-arrow">→</div>
+              <div class="synergy-step">输出</div>
+            </div>
+            <div class="shared" style="margin-top:14px;">
+              <span class="chip">共享能力一</span><span class="chip">共享能力二</span><span class="chip">共享能力三</span>
+            </div>
+            <span class="comp-cap" style="margin-top:26px;">.finance-bars （柱状）</span>
+            <div class="finance-bars" style="height:160px;margin-top:10px;gap:24px;">
+              <div class="bar"><div class="bar-fill" style="height:40%;"></div><div class="bar-label">Q1</div></div>
+              <div class="bar"><div class="bar-fill" style="height:65%;"></div><div class="bar-label">Q2</div></div>
+              <div class="bar"><div class="bar-fill" style="height:85%;"></div><div class="bar-label">Q3</div></div>
+              <div class="bar"><div class="bar-fill" style="height:100%;"></div><div class="bar-label">Q4</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="page-num-fixed page-num">06 / 11</div>
+      </div>
+    </section>
+
+    <!-- ============ 7 ARCHITECTURE SVG ============ -->
+    <section class="slide" id="slide-7" data-title="Architecture">
+      <div class="slide-inner">
+        <div class="label anim" style="--d:.05s;">05 / ARCHITECTURE EXAMPLE</div>
+        <div class="h1 anim" style="--d:.12s;margin-top:14px;">架构图示例（可编辑 SVG）</div>
+        <div class="anim" style="--d:.25s;margin-top:20px;">
+          <svg viewBox="0 0 1280 520" width="100%" style="max-width:1040px;display:block;" role="img" aria-label="通用处理流水线架构图">
+            <defs>
+              <marker id="dotA" markerWidth="9" markerHeight="9" refX="4.5" refY="4.5"><circle cx="4.5" cy="4.5" r="3.2" fill="#cdf030"/></marker>
+              <marker id="dotG" markerWidth="9" markerHeight="9" refX="4.5" refY="4.5"><circle cx="4.5" cy="4.5" r="3.2" fill="#777"/></marker>
+            </defs>
+            <!-- 节点 -->
+            <g font-family="Inter, Noto Sans SC, sans-serif" fill="#FFFFFF" font-size="17">
+              <rect x="20" y="220" width="180" height="64" rx="12" fill="none" stroke="#bbbbbb" stroke-opacity=".5"/>
+              <text x="110" y="258" text-anchor="middle">用户问题</text>
+              <rect x="260" y="220" width="180" height="64" rx="12" fill="none" stroke="#bbbbbb" stroke-opacity=".5"/>
+              <text x="350" y="258" text-anchor="middle">问题理解</text>
+              <rect x="500" y="220" width="180" height="64" rx="12" fill="none" stroke="#cdf030"/>
+              <text x="590" y="258" text-anchor="middle" fill="#cdf030">智能路由</text>
+              <rect x="740" y="220" width="180" height="64" rx="12" fill="none" stroke="#bbbbbb" stroke-opacity=".5"/>
+              <text x="830" y="258" text-anchor="middle">多源检索</text>
+              <rect x="980" y="220" width="180" height="64" rx="12" fill="#cdf030"/>
+              <text x="1070" y="258" text-anchor="middle" fill="#000000" font-weight="700">可信生成</text>
+            </g>
+            <!-- 连线 -->
+            <g fill="none" stroke="#cdf030" stroke-width="2">
+              <path d="M200,252 H256" marker-end="url(#dotA)"/>
+              <path d="M440,252 H496" marker-end="url(#dotA)"/>
+              <path d="M680,252 H736" marker-end="url(#dotA)"/>
+              <path d="M920,252 H976" marker-end="url(#dotA)"/>
+            </g>
+            <!-- 数据源（灰色回传） -->
+            <g font-family="Inter, Noto Sans SC, sans-serif" fill="#bbbbbb" font-size="13">
+              <text x="830" y="150" text-anchor="middle">多源数据</text>
+              <text x="830" y="170" text-anchor="middle" opacity=".7">文档 / 表格 / 图谱 / 媒体</text>
+              <path d="M830,176 V216" stroke="#777" stroke-width="1.6" marker-end="url(#dotG)" fill="none"/>
+            </g>
+            <!-- 反馈闭环（灰色虚线） -->
+            <path d="M1070,284 C1180,360 1180,420 1070,460 C900,500 400,500 200,460 C90,420 90,360 200,284"
+                  fill="none" stroke="#777" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#dotG)"/>
+            <text x="640" y="492" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" fill="#777">主动检索 / 持续校准闭环</text>
+          </svg>
+        </div>
+        <div class="io-band anim" style="--d:.4s;">
+          <span class="io-chip">理解</span>
+          <span class="io-chip">路由</span>
+          <span class="io-chip">检索</span>
+          <svg class="io-arrow" viewBox="0 0 60 24" aria-hidden="true"><defs><marker id="arrA7" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5"><circle cx="3.5" cy="3.5" r="2.4" fill="#cdf030"/></marker></defs><line x1="3" y1="12" x2="52" y2="12" stroke="#cdf030" stroke-width="2" marker-end="url(#arrA7)"/></svg>
+          <div class="io-pill">可信答案</div>
+        </div>
+        <div class="page-num-fixed page-num">07 / 11</div>
+      </div>
+    </section>
+
+    <!-- ============ 8 DEMO: PROJECT OVERVIEW ============ -->
+    <section class="slide" id="slide-8" data-title="Demo Overview">
+      <div class="slide-inner">
+        <div class="label anim" style="--d:.05s;">06 / DEMO · 项目概览</div>
+        <div class="h1 anim" style="--d:.12s;margin-top:14px;">项目 Alpha：行业 X 的智能化方案</div>
+        <div class="h3 anim" style="--d:.2s;">一段中性占位概述：本页演示真实演示文稿中「项目概览」版式的观感，所有名称与数据均为示例。</div>
+        <div class="grid-2 anim" style="--d:.3s;margin-top:50px;">
+          <div>
+            <div class="module-title">我们解决什么问题</div>
+            <div class="body">用 2–3 行说明目标用户的痛点与现有方案的不足。保持具体、可量化。</div>
+            <div class="module-title" style="margin-top:28px;">我们的方案</div>
+            <div class="body">用 2–3 行说明产品 / 服务如何解决问题，突出与竞品的差异点。</div>
+          </div>
+          <div>
+            <div class="kpi-grid" style="margin-top:0;">
+              <div class="kpi"><div class="kpi-num">10<span class="kpi-unit">x</span></div><div class="kpi-label">示例效率提升</div></div>
+              <div class="kpi"><div class="kpi-num">90<span class="kpi-unit">%</span></div><div class="kpi-label">示例覆盖率</div></div>
+              <div class="kpi"><div class="kpi-num">3<span class="kpi-unit">月</span></div><div class="kpi-label">示例落地周期</div></div>
+              <div class="kpi"><div class="kpi-num">5<span class="kpi-unit">家</span></div><div class="kpi-label">示例试点客户</div></div>
+            </div>
+            <div class="proof-core" style="margin-top:18px;">
+              <div class="module-title">一句话价值主张</div>
+              <div class="body">把示例行业的专业经验，变成可信、可复用的组织能力。</div>
+            </div>
+          </div>
+        </div>
+        <div class="page-num-fixed page-num">08 / 11</div>
+      </div>
+    </section>
+
+    <!-- ============ 9 DEMO: TEAM & DATA ============ -->
+    <section class="slide" id="slide-9" data-title="Demo Team">
+      <div class="slide-inner">
+        <div class="label anim" style="--d:.05s;">07 / DEMO · 团队与数据</div>
+        <div class="h1 anim" style="--d:.12s;margin-top:14px;">团队与里程碑（示例）</div>
+        <div class="team-row anim" style="--d:.25s;margin-top:46px;">
+          <div class="team-card"><div class="team-avatar"></div>成员 A<div class="team-bio">占位：角色 / 背景一句话描述</div></div>
+          <div class="team-card"><div class="team-avatar"></div>成员 B<div class="team-bio">占位：角色 / 背景一句话描述</div></div>
+          <div class="team-card"><div class="team-avatar"></div>成员 C<div class="team-bio">占位：角色 / 背景一句话描述</div></div>
+          <div class="team-card"><div class="team-avatar"></div>成员 D<div class="team-bio">占位：角色 / 背景一句话描述</div></div>
+        </div>
+        <div class="h3 anim" style="--d:.35s;margin-top:50px;">增长示意（占位数据）</div>
+        <div class="finance-bars anim" style="--d:.45s;">
+          <div class="bar"><div class="bar-fill" style="height:30%;"></div><div class="bar-label">Y1</div></div>
+          <div class="bar"><div class="bar-fill" style="height:50%;"></div><div class="bar-label">Y2</div></div>
+          <div class="bar"><div class="bar-fill" style="height:72%;"></div><div class="bar-label">Y3</div></div>
+          <div class="bar"><div class="bar-fill" style="height:90%;"></div><div class="bar-label">Y4</div></div>
+          <div class="bar"><div class="bar-fill" style="height:100%;"></div><div class="bar-label">Y5</div></div>
+        </div>
+        <div class="page-num-fixed page-num">09 / 11</div>
+      </div>
+    </section>
+
+    <!-- ============ 10 DIVIDER ============ -->
+    <section class="slide" id="slide-10" data-title="Divider">
+      <div class="slide-inner">
+        <div class="chapter-num anim" style="--d:.1s;position:absolute;right:120px;top:120px;">02</div>
+        <div class="label anim" style="--d:.05s;margin-top:160px;">CHAPTER / 章节过渡</div>
+        <div class="h1 anim" style="--d:.18s;margin-top:18px;max-width:1000px;">用超大荧光绿序号承载章节切换</div>
+        <div class="h3 anim" style="--d:.3s;max-width:820px;">此版式适合在长演示中分隔大段落；右上角巨大序号为纯装饰，不占用正文空间。</div>
+        <div class="exec-bar anim" style="--d:.4s;max-width:760px;">
+          <div class="exec-title">Usage note</div>
+          <div class="exec-body">把 .chapter-num 文本改为章节序号，正文用 .h1 / .h3 承载标题与引导句。</div>
+        </div>
+        <div class="page-num-fixed page-num">10 / 11</div>
+      </div>
+    </section>
+
+    <!-- ============ 11 CLOSING / ENGINEERING ============ -->
+    <section class="slide" id="slide-11" data-title="Engineering">
+      <div class="slide-inner">
+        <div class="label anim" style="--d:.05s;">08 / ENGINEERING & EXPORT</div>
+        <div class="h1 anim" style="--d:.12s;margin-top:14px;">工程化与导出</div>
+        <div class="grid-2 anim" style="--d:.25s;margin-top:40px;">
+          <div>
+            <div class="module-title">单文件交付</div>
+            <div class="body">所有样式与脚本内联，双击即可在浏览器打开；仅依赖 Google Fonts，离线时自动回退系统字体。</div>
+            <div class="module-title" style="margin-top:24px;">导出 PPTX</div>
+            <div class="body">使用 scripts/render_pptx.py（Playwright 截图为 3840×2160，全出血拼页）可一键导出，文字以图像保留、零变形。</div>
+          </div>
+          <div>
+            <div class="module-title">设计约束</div>
+            <div class="body">• 颜色一律走 CSS 变量，禁止散落硬编码<br/>• 不使用 emoji / 紫粉渐变 / AI 模板感<br/>• 固定 16:9 舞台，内容不出血<br/>• 中文用 Noto Sans SC，西文用 Inter</div>
+            <div class="proof-core" style="margin-top:18px;">
+              <div class="module-title">自定义主题</div>
+              <div class="body">仅改 :root 中的 --accent 等变量即可整体换色，无需改组件。</div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-bar">
+          <div class="label">EXAMPLE LABS / 示例科技</div>
+          <div class="label">BLACK MINIMAL DECK SYSTEM</div>
+        </div>
+        <div class="page-num-fixed page-num">11 / 11</div>
+      </div>
+    </section>
+
+    <!-- 导航控制 -->
+    <div class="nav-ctrl">
+      <button id="prevBtn" type="button">PREV</button>
+      <button id="nextBtn" type="button">NEXT</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var current = 0;
+  var total = slides.length;
+  var stage = document.getElementById('stage');
+  var viewport = document.getElementById('viewport');
+
+  function scaleStage(){
+    var s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    stage.style.transform = 'translate(-50%,-50%) scale(' + s + ')';
+  }
+  window.addEventListener('resize', scaleStage);
+  scaleStage();
+
+  function goTo(idx){
+    if(isNaN(idx)) return;
+    if(idx < 0) idx = 0;
+    if(idx > total - 1) idx = total - 1;
+    slides[current].classList.remove('active');
+    current = idx;
+    var el = slides[current];
+    el.classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  function next(){ goTo(current + 1); }
+  function prev(){ goTo(current - 1); }
+
+  document.getElementById('nextBtn').addEventListener('click', next);
+  document.getElementById('prevBtn').addEventListener('click', prev);
+
+  window.addEventListener('keydown', function(e){
+    if(['ArrowRight','ArrowDown',' ','PageDown'].indexOf(e.key) > -1){ e.preventDefault(); next(); }
+    else if(['ArrowLeft','ArrowUp','PageUp'].indexOf(e.key) > -1){ e.preventDefault(); prev(); }
+  });
+
+  var wheelLock = false;
+  window.addEventListener('wheel', function(e){
+    e.preventDefault();
+    if(wheelLock) return;
+    if(Math.abs(e.deltaY) < 12) return;
+    wheelLock = true;
+    if(e.deltaY > 0) next(); else prev();
+    setTimeout(function(){ wheelLock = false; }, 700);
+  }, {passive:false});
+
+  document.querySelectorAll('[data-proof]').forEach(function(card){
+    card.addEventListener('click', function(){ card.classList.toggle('expanded'); });
+  });
+
+  // 目录锚点点击跳转
+  document.querySelectorAll('.toc-row').forEach(function(a){
+    a.addEventListener('click', function(e){
+      e.preventDefault();
+      var id = a.getAttribute('href').replace('#','');
+      var idx = slides.findIndex(function(s){ return s.id === id; });
+      if(idx > -1) goTo(idx);
+    });
+  });
+
+  var sx=0, sy=0, st=0;
+  stage.addEventListener('touchstart', function(e){
+    var t = e.changedTouches[0]; sx=t.clientX; sy=t.clientY; st=Date.now();
+  }, {passive:true});
+  stage.addEventListener('touchend', function(e){
+    var t = e.changedTouches[0];
+    var dx = t.clientX - sx, dy = t.clientY - sy, dt = Date.now() - st;
+    if(dt < 800 && (Math.abs(dx) > 50 || Math.abs(dy) > 50)){
+      if(dx < 0 || dy < 0) next(); else prev();
+    }
+  }, {passive:true});
+
+  // 支持 #slide-N 深链直达（便于分享与截图）
+  var hashId = (location.hash || '').replace('#','');
+  var hashIdx = slides.findIndex(function(s){ return s.id === hashId; });
+  goTo(hashIdx > -1 ? hashIdx : 0);
+})();
+</script>
+</body>
+</html>
