@@ -682,9 +682,15 @@ html,body{
   }, {passive:true});
 
   // 支持 #slide-N 深链直达（便于分享与截图）
-  var hashId = (location.hash || '').replace('#','');
-  var hashIdx = slides.findIndex(function(s){ return s.id === hashId; });
-  goTo(hashIdx > -1 ? hashIdx : 0);
+  function goToHash(){
+    var id = (location.hash || '').replace('#','');
+    var idx = slides.findIndex(function(s){ return s.id === id; });
+    if(idx > -1) goTo(idx);
+  }
+  // 同文档内改 hash（粘贴链接 / 前进后退 / 脚本跳转）也要生效
+  window.addEventListener('hashchange', goToHash);
+
+  if(location.hash) goToHash(); else goTo(0);
 })();
 </script>
 </body>

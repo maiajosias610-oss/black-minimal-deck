@@ -1,6 +1,6 @@
 ---
 name: black-minimal-deck
-description: 生成「黑色极简风」单文件 HTML 演示文稿（纯黑底 #000000 + 荧光柠绿 #cdf030，Inter + Noto Sans SC，固定 16:9 舞台，30+ 复用组件），并可一键导出高保真 PPTX。Use when the user asks for a black minimal / dark keynote-style HTML deck, a VC/business-plan slide deck in the black+lime style, or converting such an HTML deck to PPTX. Triggers: 黑色极简 PPT、黑底荧光绿演示、极简风幻灯片、black minimal deck、dark minimal slides.
+description: "生成「黑色极简风」单文件 HTML 演示文稿（纯黑底 #000000 + 荧光柠绿 #cdf030，Inter + Noto Sans SC，固定 16:9 舞台，30+ 复用组件），并可一键导出高保真 PPTX。Use when the user asks for a black minimal / dark keynote-style HTML deck, a VC/business-plan slide deck in the black+lime style, or converting such an HTML deck to PPTX. Triggers: 黑色极简 PPT、黑底荧光绿演示、极简风幻灯片、black minimal deck、dark minimal slides."
 ---
 
 # Black Minimal Deck（黑色极简演示设计系统）
@@ -111,9 +111,12 @@ description: 生成「黑色极简风」单文件 HTML 演示文稿（纯黑底 
 ## 导出 PPTX（scripts/render_pptx.py）
 
 - 原理：Playwright 无头 Chromium 按 3840×2160 逐页截图 → python-pptx 全出血拼成 16:9 页
-- 依赖：`pip install playwright python-pptx` + `playwright install chromium`
+- 依赖：`pip install playwright python-pptx`（默认用系统 Chrome，`channel="chrome"`；无则回退 `playwright install chromium`）
 - 特性：文字以高清图像保留，零变形、零丢字；代价是不可再编辑文本
 - 用法：`python scripts/render_pptx.py deck.html 输出.pptx [--pages 1-11]`
+- **坑（脚本已内置防呆）**：`page.goto(url#slide-N)` 是同文档片段跳转，**不会重新执行 deck 的 JS**，
+  结果会把同一页导出 N 次。正确做法是加载一次后用 `evaluate` 切换 `.slide.active` 类；
+  脚本已按此实现，并在「所有页截图完全相同」时打印告警。
 
 ## 脱敏与共享
 

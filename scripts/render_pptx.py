@@ -18,6 +18,7 @@ Deps:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import sys
 import tempfile
 from pathlib import Path
@@ -80,8 +81,11 @@ def main() -> None:
                 device_scale_factor=args.scale,
             )
 
-            # Probe total slide count from the deck itself.
             page.goto(url, wait_until="load")
+            try:
+                page.wait_for_load_state("networkidle", timeout=8000)
+            except Exception:
+                pass  # offline mode: Google Fonts unreachable, system fallback kicks in
             page.wait_for_timeout(args.wait_ms)
             total = page.evaluate("document.querySelectorAll('.slide').length")
             if not total:
@@ -89,22 +93,40 @@ def main() -> None:
                 sys.exit("[render_pptx] no .slide sections found in the HTML")
 
             pages = parse_pages(args.pages, total)
+            if not pages:
+                browser.close()
+                sys.exit(f"[render_pptx] --pages {args.pages} matches no slide (valid range: 1-{total})")
             print(f"[render_pptx] {total} slides found, exporting pages: {pages}")
 
             # Hide on-screen nav controls so they never appear in the export.
             page.add_style_tag(content=".nav-ctrl{display:none!important}")
 
+            # Activate each slide in place. Do NOT rely on "#slide-N" navigation:
+            # a fragment change is same-document, so the deck JS never re-runs and
+            # every capture silently renders the same page.
+            activate = """(idx) => {
+              const ss = [...document.querySelectorAll('.slide')];
+              ss.forEach(s => s.classList.remove('active'));
+              const el = document.getElementById('slide-' + idx);
+              if (!el) return false;
+              el.classList.add('active');
+              return true;
+            }"""
+
             for n in pages:
-                page.goto(f"{url}#slide-{n}", wait_until="load")
-                try:
-                    page.wait_for_load_state("networkidle", timeout=8000)
-                except Exception:
-                    pass  # offline mode: Google Fonts unreachable, system fallback kicks in
+                if not page.evaluate(activate, n):
+                    print(f"[render_pptx] WARNING: no slide with id 'slide-{n}', skipped")
+                    continue
                 page.wait_for_timeout(args.wait_ms)
                 shot = Path(td) / f"slide-{n:02d}.png"
                 page.screenshot(path=str(shot), clip={"x": 0, "y": 0, "width": 1920, "height": 1080})
                 shots.append(shot)
                 print(f"[render_pptx] captured page {n}/{total}")
+
+            # Guard against the "same page exported N times" failure mode.
+            digests = {hashlib.md5(s.read_bytes()).hexdigest() for s in shots}
+            if len(shots) > 1 and len(digests) == 1:
+                print("[render_pptx] WARNING: every captured page is identical - slide activation likely failed")
 
             browser.close()
 
